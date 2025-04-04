@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Click to Open</title>
+    <style>
+        body {
+            background: black no-repeat center center fixed;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            background-size: cover;
+            overflow: hidden;
+        }
+
+        .overlay,
+        .scare {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            
+        }
+
+        .overlay {
+            z-index: 2;
+            position: relative;
+        }
+
+        .overlay-content {
+            position: absolute;
+            text-align: center;
+        }
+
+        .overlay-button {
+            font-size: 22px;
+            cursor: pointer;
+            font-family: monospace;
+            margin: 5px;
+        }
+
+        .scare {
+            z-index: 1;
+        }
+
+        video#video::-webkit-media-controls-enclosure {
+            display: none !important;
+        }
+
+        .click-text {
+            color: white;
+            text-shadow: 0 0 6px currentColor;
+        }
+
+        .here-text {
+            color: #389cff;
+            text-shadow: 0 0 6px currentColor;
+        }
+
+        .emoji-text {
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="overlay" class="overlay">
+        <div class="overlay-content">
+            <div id="accept-button" class="overlay-button">>> <span class="click-text"></span> <span class="here-text"></span> <<</div>
+            <span class="emoji-text"></span>
+        </div>
+    </div>
+
+    <div class="scare">
+        <video id="video" class="video" preload="auto" src="CAT.mp4"></video>
+    </div>
+
+    <script>
+        const clickSpan = document.querySelector('.click-text');
+        const hereSpan = document.querySelector('.here-text');
+        const emojiSpan = document.querySelector('.emoji-text');
+
+        function textTypingEffect(element, text, i = 0, callback) {
+            element.textContent += text[i];
+            if (i === text.length - 1) {
+                if (callback) callback();
+                return;
+            }
+            setTimeout(() => textTypingEffect(element, text, i + 1, callback), 65);
+        }
+
+        const emojis = [
+            '💘', '❤️‍🔥', '💞', '💔', '💓', '💖', '🫶',
+            '🌙', '🪐', '🌟', '✨', '😎', '🥰', '😭', '😈',
+            '😇', '🫠', '😶‍🌫️', '🥺', '🤯', '💐', '🌷', '🌹',
+            '🥀', '🌺', '🌸', '🌻', '🌞', '🌝', '🌚', '🌎',
+            '🌍', '🌏', '💫', '⭐️', '⚡️', '☄️', '💥', '🔥',
+            '🌈', '☀️'
+        ];
+
+        function getUniqueRandomEmojis(count = 4) {
+            const result = [];
+            const usedIndexes = new Set();
+            while (result.length < count && usedIndexes.size < emojis.length) {
+                const index = Math.floor(Math.random() * emojis.length);
+                if (!usedIndexes.has(index)) {
+                    usedIndexes.add(index);
+                    result.push(emojis[index]);
+                }
+            }
+            return result.join('');
+        }
+
+        textTypingEffect(clickSpan, 'Click', 0, () => {
+            textTypingEffect(hereSpan, 'Here', 0, () => {
+                const randomEmojis = getUniqueRandomEmojis();
+                textTypingEffect(emojiSpan, randomEmojis);
+            });
+        });
+    </script>
+
+    <script>
+        const overlay = document.getElementById("overlay");
+        const acceptButton = document.getElementById("accept-button");
+        const video = document.querySelector(".video#video");
+
+        video.addEventListener("pause", function (event) {
+            event.preventDefault();
+            video.play();
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" || event.keyCode === 27) {
+                event.preventDefault();
+                enterFullScreen();
+            }
+        });
+
+        document.addEventListener("fullscreenchange", handleFullScreenChange);
+        document.addEventListener("webkitfullscreenchange", handleFullScreenChange);
+        document.addEventListener("mozfullscreenchange", handleFullScreenChange);
+        document.addEventListener("msfullscreenchange", handleFullScreenChange);
+
+        function isFullScreen() {
+            return (
+                document.fullscreenElement ||
+                document.mozFullScreenElement ||
+                document.webkitFullscreenElement ||
+                document.msFullscreenElement
+            );
+        }
+
+        function handleFullScreenChange() {
+            if (isFullScreen()) {
+                video.classList.add("fullscreen");
+                video.muted = false;
+            } else {
+                video.classList.remove("fullscreen");
+                video.play()
+                video.muted = true;
+            }
+        }
+
+        function enterFullScreen() {
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.mozRequestFullScreen) {
+                video.mozRequestFullScreen();
+            } else if (video.webkitRequestFullscreen) {
+                video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) {
+                video.msRequestFullscreen();
+            }
+        }
+
+        function exitFullScreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        function acceptButtonClick(event) {
+            event.preventDefault();
+            video
+                .play()
+                .then(() => {
+                    enterFullScreen();
+                })
+                .catch((error) => {
+                    console.error("Video play error:", error);
+                });
+            
+            // setTimeout(() => {
+            //   console.log("Redirecting...");
+            //   window.location.href = "/";
+            // }, 4000);
+        }
+
+        acceptButton.addEventListener("click", acceptButtonClick);
+    </script>
+</body>
+
+</html>
